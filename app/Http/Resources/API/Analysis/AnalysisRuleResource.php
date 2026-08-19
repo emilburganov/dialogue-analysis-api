@@ -17,6 +17,7 @@ class AnalysisRuleResource extends JsonResource
         return [
             'id' => $this->id,
             'slug' => $this->slug,
+            'rule_type_id' => $this->ruleTypeId,
             'rule_type' => $this->ruleType,
             'name' => $this->name,
             'description' => $this->description,

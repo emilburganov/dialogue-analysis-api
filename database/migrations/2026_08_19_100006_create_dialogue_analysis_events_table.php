@@ -14,7 +14,7 @@ return new class extends Migration
                 ->foreignId('dialogue_id')
                 ->constrained()
                 ->cascadeOnDelete();
-            $table->string('rule_slug');
+            $table->foreignId('analysis_rule_id')->constrained('analysis_rules');
             $table->string('severity');
             $table->string('title');
             $table->text('description');
@@ -22,7 +22,6 @@ return new class extends Migration
             $table->json('context')->nullable();
             $table->timestamps();
 
-            $table->foreign('rule_slug')->references('slug')->on('analysis_rules');
             $table->index(['dialogue_id', 'severity']);
         });
     }

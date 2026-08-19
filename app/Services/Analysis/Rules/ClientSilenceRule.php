@@ -27,7 +27,7 @@ class ClientSilenceRule implements AnalysisRuleInterface
 
         return [
             new AnalysisEventDraftDTO(
-                ruleSlug: $rule->slug,
+                analysisRuleId: $rule->id,
                 severity: $this->severity($rule),
                 title: sprintf('Клиент не ответил на сообщение №%d', $lastMessage->id),
                 description: 'Последнее сообщение в диалоге отправил менеджер — клиент перестал отвечать.',

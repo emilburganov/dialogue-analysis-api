@@ -14,6 +14,7 @@ readonly class AnalysisEventDTO
      */
     public function __construct(
         public int $id,
+        public int $analysisRuleId,
         public string $ruleSlug,
         public string $ruleName,
         public AnalysisSeverity $severity,
@@ -28,11 +29,13 @@ readonly class AnalysisEventDTO
     public static function fromModel(DialogueAnalysisEvent $event): self
     {
         $severity = AnalysisSeverity::from($event->severity);
+        $event->loadMissing('rule');
 
         return new self(
             id: $event->id,
-            ruleSlug: $event->rule_slug,
-            ruleName: $event->rule?->name ?? $event->rule_slug,
+            analysisRuleId: $event->analysis_rule_id,
+            ruleSlug: $event->rule?->slug ?? '',
+            ruleName: $event->rule?->name ?? '',
             severity: $severity,
             severityLabel: $severity->label(),
             title: $event->title,

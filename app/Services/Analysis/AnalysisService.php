@@ -32,6 +32,7 @@ class AnalysisService
         $drafts = [];
 
         $rules = AnalysisRule::query()
+            ->with('type')
             ->where('is_enabled', true)
             ->orderBy('id')
             ->get();
@@ -50,7 +51,7 @@ class AnalysisService
         foreach ($drafts as $draft) {
             DialogueAnalysisEvent::query()->create([
                 'dialogue_id' => $snapshot->id,
-                'rule_slug' => $draft->ruleSlug,
+                'analysis_rule_id' => $draft->analysisRuleId,
                 'severity' => $draft->severity->value,
                 'title' => $draft->title,
                 'description' => $draft->description,

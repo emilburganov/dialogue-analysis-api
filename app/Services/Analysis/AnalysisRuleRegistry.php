@@ -7,8 +7,19 @@ use App\Models\AnalysisRuleType;
 
 class AnalysisRuleRegistry
 {
+    /** @var array<string, array<string, mixed>>|null */
     private ?array $typesCache = null;
 
+    /**
+     * @return array<string, array{
+     *     id: int,
+     *     name: string,
+     *     description: string,
+     *     class: class-string<AnalysisRuleInterface>,
+     *     default_severity: string,
+     *     config_schema: list<array<string, mixed>>
+     * }>
+     */
     public function types(): array
     {
         if ($this->typesCache !== null) {
@@ -20,6 +31,7 @@ class AnalysisRuleRegistry
             ->get()
             ->mapWithKeys(fn (AnalysisRuleType $type) => [
                 $type->slug => [
+                    'id' => $type->id,
                     'name' => $type->name,
                     'description' => $type->description,
                     'class' => $type->executor_class,
@@ -32,37 +44,36 @@ class AnalysisRuleRegistry
         return $this->typesCache;
     }
 
-    public function hasType(string $ruleType): bool
+    public function hasTypeId(int $ruleTypeId): bool
     {
-        return array_key_exists($ruleType, $this->types());
+        return AnalysisRuleType::query()->whereKey($ruleTypeId)->exists();
+    }
+
+    public function findType(int $ruleTypeId): ?AnalysisRuleType
+    {
+        return AnalysisRuleType::query()->find($ruleTypeId);
     }
 
     /**
      * @return array<string, mixed>
      */
-    public function defaultConfig(string $ruleType): array
+    public function defaultConfig(AnalysisRuleType $type): array
     {
-        $type = AnalysisRuleType::query()->where('slug', $ruleType)->first();
-
-        if ($type === null) {
-            return [];
-        }
-
         return $type->defaultConfig();
     }
 
     public function makeExecutor(AnalysisRule $rule): AnalysisRuleInterface
     {
-        $type = $this->types()[$rule->rule_type] ?? null;
+        $rule->loadMissing('type');
 
-        if ($type === null) {
-            throw new \InvalidArgumentException("Unknown rule type: {$rule->rule_type}");
+        if ($rule->type === null) {
+            throw new \InvalidArgumentException("Unknown rule type for rule: {$rule->slug}");
         }
 
-        $class = $type['class'];
+        $class = $rule->type->executor_class;
 
         if (! is_subclass_of($class, AnalysisRuleInterface::class)) {
-            throw new \InvalidArgumentException("Invalid executor class for rule type: {$rule->rule_type}");
+            throw new \InvalidArgumentException("Invalid executor class for rule type: {$rule->type->slug}");
         }
 
         return app($class);

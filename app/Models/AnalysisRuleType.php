@@ -34,7 +34,7 @@ class AnalysisRuleType extends Model
      */
     public function rules(): HasMany
     {
-        return $this->hasMany(AnalysisRule::class, 'rule_type', 'slug');
+        return $this->hasMany(AnalysisRule::class, 'rule_type_id');
     }
 
     /**

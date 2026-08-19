@@ -35,7 +35,7 @@ class ObjectionDetectedRule implements AnalysisRuleInterface
             }
 
             $events[] = new AnalysisEventDraftDTO(
-                ruleSlug: $rule->slug,
+                analysisRuleId: $rule->id,
                 severity: $this->severity($rule),
                 title: 'Обнаружено возможное возражение клиента',
                 description: sprintf(

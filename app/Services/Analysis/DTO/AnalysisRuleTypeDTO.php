@@ -8,6 +8,7 @@ readonly class AnalysisRuleTypeDTO
      * @param  list<array<string, mixed>>  $configSchema
      */
     public function __construct(
+        public int $id,
         public string $type,
         public string $name,
         public string $description,

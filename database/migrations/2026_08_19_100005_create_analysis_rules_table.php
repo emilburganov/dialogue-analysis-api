@@ -11,7 +11,11 @@ return new class extends Migration
         Schema::create('analysis_rules', function (Blueprint $table) {
             $table->id();
             $table->string('slug')->unique();
-            $table->string('rule_type');
+            $table
+                ->foreignId('rule_type_id')
+                ->constrained('analysis_rule_types')
+                ->cascadeOnUpdate()
+                ->cascadeOnDelete();
             $table->string('name');
             $table->text('description');
             $table->string('default_severity')->default('medium');
@@ -19,8 +23,6 @@ return new class extends Migration
             $table->boolean('is_system')->default(false);
             $table->json('config')->nullable();
             $table->timestamps();
-
-            $table->foreign('rule_type')->references('slug')->on('analysis_rule_types');
         });
     }
 

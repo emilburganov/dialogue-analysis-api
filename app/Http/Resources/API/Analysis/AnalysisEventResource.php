@@ -16,6 +16,7 @@ class AnalysisEventResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'analysis_rule_id' => $this->analysisRuleId,
             'rule_slug' => $this->ruleSlug,
             'rule_name' => $this->ruleName,
             'severity' => $this->severity->value,

@@ -12,7 +12,7 @@ class DialogueAnalysisEvent extends Model
      */
     protected $fillable = [
         'dialogue_id',
-        'rule_slug',
+        'analysis_rule_id',
         'severity',
         'title',
         'description',
@@ -46,6 +46,6 @@ class DialogueAnalysisEvent extends Model
      */
     public function rule(): BelongsTo
     {
-        return $this->belongsTo(AnalysisRule::class, 'rule_slug', 'slug');
+        return $this->belongsTo(AnalysisRule::class, 'analysis_rule_id');
     }
 }

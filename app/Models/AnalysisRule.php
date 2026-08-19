@@ -13,7 +13,7 @@ class AnalysisRule extends Model
      */
     protected $fillable = [
         'slug',
-        'rule_type',
+        'rule_type_id',
         'name',
         'description',
         'default_severity',
@@ -39,7 +39,7 @@ class AnalysisRule extends Model
      */
     public function type(): BelongsTo
     {
-        return $this->belongsTo(AnalysisRuleType::class, 'rule_type', 'slug');
+        return $this->belongsTo(AnalysisRuleType::class, 'rule_type_id');
     }
 
     /**
@@ -47,6 +47,6 @@ class AnalysisRule extends Model
      */
     public function events(): HasMany
     {
-        return $this->hasMany(DialogueAnalysisEvent::class, 'rule_slug', 'slug');
+        return $this->hasMany(DialogueAnalysisEvent::class, 'analysis_rule_id');
     }
 }

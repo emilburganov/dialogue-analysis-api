@@ -38,7 +38,7 @@ class SlowManagerResponseRule implements AnalysisRuleInterface
             }
 
             $events[] = new AnalysisEventDraftDTO(
-                ruleSlug: $rule->slug,
+                analysisRuleId: $rule->id,
                 severity: $this->severity($rule),
                 title: sprintf('Менеджер ответил через %d мин.', $delayMinutes),
                 description: sprintf(

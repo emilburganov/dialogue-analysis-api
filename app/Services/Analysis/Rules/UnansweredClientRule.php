@@ -27,7 +27,7 @@ class UnansweredClientRule implements AnalysisRuleInterface
 
         return [
             new AnalysisEventDraftDTO(
-                ruleSlug: $rule->slug,
+                analysisRuleId: $rule->id,
                 severity: $this->severity($rule),
                 title: sprintf('Клиент ждёт ответ на сообщение №%d', $lastMessage->id),
                 description: 'Последнее сообщение в диалоге отправил клиент — менеджер ещё не ответил.',

@@ -11,7 +11,7 @@ readonly class AnalysisEventDraftDTO
      * @param  array<string, mixed>|null  $context
      */
     public function __construct(
-        public string $ruleSlug,
+        public int $analysisRuleId,
         public AnalysisSeverity $severity,
         public string $title,
         public string $description,

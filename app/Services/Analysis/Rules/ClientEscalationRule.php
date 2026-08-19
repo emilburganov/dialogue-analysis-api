@@ -53,7 +53,7 @@ class ClientEscalationRule implements AnalysisRuleInterface
         $ids = array_map(fn (MessageSnapshot $message) => $message->id, $messages);
 
         return new AnalysisEventDraftDTO(
-            ruleSlug: $rule->slug,
+            analysisRuleId: $rule->id,
             severity: $this->severity($rule),
             title: sprintf('Клиент отправил %d сообщения подряд без ответа', count($messages)),
             description: 'Клиент несколько раз подряд написал менеджеру — возможно, вопрос остался без внимания.',

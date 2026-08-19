@@ -3,6 +3,7 @@
 namespace App\Services\Analysis;
 
 use App\Models\AnalysisRule;
+use App\Models\AnalysisRuleType;
 use App\Models\DialogueAnalysisEvent;
 use App\Models\User;
 use App\Services\Analysis\DTO\AnalysisRuleDTO;
@@ -29,6 +30,7 @@ class AnalysisRuleManagementService
 
         return array_map(
             fn (string $type, array $meta) => new AnalysisRuleTypeDTO(
+                id: $meta['id'],
                 type: $type,
                 name: $meta['name'],
                 description: $meta['description'],
@@ -48,6 +50,7 @@ class AnalysisRuleManagementService
         $this->ensureAdmin($user);
 
         return AnalysisRule::query()
+            ->with('type')
             ->orderBy('name')
             ->get()
             ->map(fn (AnalysisRule $rule) => $this->toDto($rule))
@@ -61,9 +64,10 @@ class AnalysisRuleManagementService
     {
         $this->ensureAdmin($user);
 
-        $ruleType = (string) ($payload['rule_type'] ?? '');
+        $ruleTypeId = (int) ($payload['rule_type_id'] ?? 0);
+        $type = $this->registry->findType($ruleTypeId);
 
-        if (! $this->registry->hasType($ruleType)) {
+        if ($type === null) {
             throw new AnalysisRuleValidationException('Выбран неизвестный тип правила.');
         }
 
@@ -83,18 +87,17 @@ class AnalysisRuleManagementService
             throw new AnalysisRuleValidationException('Укажите название правила.');
         }
 
-        $typeMeta = $this->registry->types()[$ruleType];
         $defaultSeverity = $this->normalizeSeverity(
-            (string) ($payload['default_severity'] ?? $typeMeta['default_severity']),
+            (string) ($payload['default_severity'] ?? $type->default_severity),
         );
         $config = $this->normalizeConfig(
-            $ruleType,
+            $type,
             is_array($payload['config'] ?? null) ? $payload['config'] : [],
         );
 
         $rule = AnalysisRule::query()->create([
             'slug' => $slug,
-            'rule_type' => $ruleType,
+            'rule_type_id' => $type->id,
             'name' => $name,
             'description' => $payload['description'] ?? null,
             'default_severity' => $defaultSeverity,
@@ -103,7 +106,7 @@ class AnalysisRuleManagementService
             'config' => $config,
         ]);
 
-        return $this->toDto($rule);
+        return $this->toDto($rule->load('type'));
     }
 
     /**
@@ -134,12 +137,18 @@ class AnalysisRuleManagementService
         }
 
         if (array_key_exists('config', $payload) && is_array($payload['config'])) {
-            $rule->config = $this->normalizeConfig($rule->rule_type, $payload['config']);
+            $rule->loadMissing('type');
+
+            if ($rule->type === null) {
+                throw new AnalysisRuleValidationException('У правила не найден тип.');
+            }
+
+            $rule->config = $this->normalizeConfig($rule->type, $payload['config']);
         }
 
         $rule->save();
 
-        return $this->toDto($rule->fresh());
+        return $this->toDto($rule->fresh(['type']));
     }
 
     public function toggle(User $user, int $ruleId): AnalysisRuleDTO
@@ -151,7 +160,7 @@ class AnalysisRuleManagementService
         $rule->is_enabled = ! $rule->is_enabled;
         $rule->save();
 
-        return $this->toDto($rule->fresh());
+        return $this->toDto($rule->fresh(['type']));
     }
 
     public function delete(User $user, int $ruleId): void
@@ -162,7 +171,7 @@ class AnalysisRuleManagementService
         $this->ensureMutable($rule, 'удалять');
 
         DialogueAnalysisEvent::query()
-            ->where('rule_slug', $rule->slug)
+            ->where('analysis_rule_id', $rule->id)
             ->delete();
 
         $rule->delete();
@@ -184,7 +193,7 @@ class AnalysisRuleManagementService
 
     private function findRule(int $ruleId): AnalysisRule
     {
-        $rule = AnalysisRule::query()->find($ruleId);
+        $rule = AnalysisRule::query()->with('type')->find($ruleId);
 
         if ($rule === null) {
             throw new AnalysisRuleNotFoundException;
@@ -195,12 +204,13 @@ class AnalysisRuleManagementService
 
     private function toDto(AnalysisRule $rule): AnalysisRuleDTO
     {
-        $typeMeta = $this->registry->types()[$rule->rule_type] ?? null;
+        $rule->loadMissing('type');
 
         return new AnalysisRuleDTO(
             id: $rule->id,
             slug: $rule->slug,
-            ruleType: $rule->rule_type,
+            ruleTypeId: $rule->rule_type_id,
+            ruleType: $rule->type?->slug ?? '',
             name: $rule->name,
             description: $rule->description,
             defaultSeverity: $rule->default_severity,
@@ -208,8 +218,8 @@ class AnalysisRuleManagementService
             isEnabled: $rule->is_enabled,
             isSystem: $rule->is_system,
             config: $rule->config,
-            typeName: $typeMeta['name'] ?? $rule->rule_type,
-            typeDescription: $typeMeta['description'] ?? '',
+            typeName: $rule->type?->name ?? '',
+            typeDescription: $rule->type?->description ?? '',
         );
     }
 
@@ -228,10 +238,10 @@ class AnalysisRuleManagementService
      * @param  array<string, mixed>  $config
      * @return array<string, mixed>
      */
-    private function normalizeConfig(string $ruleType, array $config): array
+    private function normalizeConfig(AnalysisRuleType $type, array $config): array
     {
-        $schema = $this->registry->types()[$ruleType]['config_schema'] ?? [];
-        $normalized = $this->registry->defaultConfig($ruleType);
+        $schema = $type->config_schema;
+        $normalized = $type->defaultConfig();
 
         foreach ($schema as $field) {
             $key = $field['key'];
