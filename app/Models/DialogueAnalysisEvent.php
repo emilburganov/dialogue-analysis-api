@@ -28,6 +28,8 @@ class DialogueAnalysisEvent extends Model
         return [
             'message_ids' => 'array',
             'context' => 'array',
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
         ];
     }
 

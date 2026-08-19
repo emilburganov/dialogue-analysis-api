@@ -80,7 +80,7 @@ class AnalysisService
         return new AnalysisResultDTO(
             dialogueId: $dialogue->id,
             total: count($events),
-            analyzedAt: $now->toIso8601String(),
+            analyzedAt: $now,
             events: $events,
         );
     }

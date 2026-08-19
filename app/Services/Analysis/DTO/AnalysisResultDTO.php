@@ -2,6 +2,8 @@
 
 namespace App\Services\Analysis\DTO;
 
+use Illuminate\Support\Carbon;
+
 readonly class AnalysisResultDTO
 {
     /**
@@ -10,7 +12,7 @@ readonly class AnalysisResultDTO
     public function __construct(
         public int $dialogueId,
         public int $total,
-        public string $analyzedAt,
+        public Carbon $analyzedAt,
         public array $events,
     ) {}
 }

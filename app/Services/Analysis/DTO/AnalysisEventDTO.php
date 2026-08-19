@@ -4,6 +4,7 @@ namespace App\Services\Analysis\DTO;
 
 use App\Models\DialogueAnalysisEvent;
 use App\Services\Analysis\Enums\AnalysisSeverity;
+use Illuminate\Support\Carbon;
 
 readonly class AnalysisEventDTO
 {
@@ -21,7 +22,7 @@ readonly class AnalysisEventDTO
         public string $description,
         public array $messageIds,
         public ?array $context,
-        public string $detectedAt,
+        public Carbon $detectedAt,
     ) {}
 
     public static function fromModel(DialogueAnalysisEvent $event): self
@@ -38,7 +39,7 @@ readonly class AnalysisEventDTO
             description: $event->description,
             messageIds: $event->message_ids,
             context: $event->context,
-            detectedAt: $event->created_at->toIso8601String(),
+            detectedAt: $event->created_at,
         );
     }
 }

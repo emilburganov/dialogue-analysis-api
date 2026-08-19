@@ -22,6 +22,18 @@ class Dialogue extends Model
     ];
 
     /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+            'deleted_at' => 'datetime',
+        ];
+    }
+
+    /**
      * @return BelongsTo<User, $this>
      */
     public function manager(): BelongsTo

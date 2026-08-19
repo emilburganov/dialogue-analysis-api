@@ -4,6 +4,7 @@ namespace App\Services\Dialogue\DTO;
 
 use App\Models\Message;
 use App\Services\Dialogue\Enums\MessageSenderType;
+use Illuminate\Support\Carbon;
 
 readonly class MessageDTO
 {
@@ -12,7 +13,7 @@ readonly class MessageDTO
         public MessageSenderType $sender,
         public string $senderLabel,
         public string $body,
-        public string $sentAt,
+        public Carbon $sentAt,
     ) {}
 
     public static function fromModel(Message $message): self
@@ -22,7 +23,7 @@ readonly class MessageDTO
             sender: $message->resolveSenderType(),
             senderLabel: $message->senderLabel(),
             body: $message->body,
-            sentAt: $message->sent_at->toIso8601String(),
+            sentAt: $message->sent_at,
         );
     }
 }

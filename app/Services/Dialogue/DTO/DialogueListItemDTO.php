@@ -4,6 +4,7 @@ namespace App\Services\Dialogue\DTO;
 
 use App\Models\Dialogue;
 use App\Services\Dialogue\Enums\DialogueResultType;
+use Illuminate\Support\Carbon;
 
 readonly class DialogueListItemDTO
 {
@@ -13,7 +14,7 @@ readonly class DialogueListItemDTO
         public string $clientName,
         public DialogueResultType $result,
         public string $resultLabel,
-        public string $lastMessageAt,
+        public Carbon $lastMessageAt,
         public string $preview,
         public bool $deletedByClient,
     ) {}
@@ -31,7 +32,7 @@ readonly class DialogueListItemDTO
             clientName: $dialogue->clientName(),
             result: $dialogue->resolveResultType(),
             resultLabel: $dialogue->resultLabel(),
-            lastMessageAt: $lastMessage?->sent_at->toIso8601String() ?? $dialogue->updated_at->toIso8601String(),
+            lastMessageAt: $lastMessage?->sent_at ?? $dialogue->updated_at,
             preview: $lastMessage?->body ?? '',
             deletedByClient: $dialogue->trashed(),
         );
