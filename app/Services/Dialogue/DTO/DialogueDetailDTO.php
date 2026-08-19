@@ -7,9 +7,6 @@ use App\Services\Dialogue\Enums\DialogueResultType;
 
 readonly class DialogueDetailDTO
 {
-    /**
-     * @param  list<MessageDTO>  $messages
-     */
     public function __construct(
         public int $id,
         public string $managerName,

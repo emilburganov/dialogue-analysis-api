@@ -8,9 +8,6 @@ readonly class SendMessageDTO
         public string $body,
     ) {}
 
-    /**
-     * @param  array{body: string}  $data
-     */
     public static function fromArray(array $data): self
     {
         return new self(body: $data['body']);

@@ -20,7 +20,10 @@ readonly class DialogueListItemDTO
 
     public static function fromModel(Dialogue $dialogue): self
     {
-        $lastMessage = $dialogue->messages->first();
+        $lastMessage = $dialogue
+            ->messages()
+            ->get()
+            ->last();
 
         return new self(
             id: $dialogue->id,
