@@ -13,6 +13,7 @@ return new class extends Migration
             $table
                 ->foreignId('dialogue_id')
                 ->constrained()
+                ->cascadeOnUpdate()
                 ->cascadeOnDelete();
             $table
                 ->foreignId('analysis_rule_id')

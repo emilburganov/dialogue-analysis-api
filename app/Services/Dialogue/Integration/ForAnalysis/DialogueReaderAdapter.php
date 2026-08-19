@@ -22,7 +22,9 @@ class DialogueReaderAdapter implements DialogueReaderInterface
      */
     public function getDialogueForAnalysis(User $user, int $dialogueId): DialogueSnapshot
     {
-        if ($user->resolveRole() === UserRole::Client) {
+        $userRole = UserRole::from($user->role->slug);
+
+        if ($userRole === UserRole::Client) {
             throw new AnalysisAccessDeniedException(
                 'Анализ диалогов доступен только менеджерам и администраторам.',
             );
@@ -41,7 +43,19 @@ class DialogueReaderAdapter implements DialogueReaderInterface
         return new DialogueSnapshot(
             id: $dialogue->id,
             messages: $dialogue->messages
-                ->map(fn (Message $message) => $this->mapMessage($message))
+                ->map(function (Message $message) {
+                    $author = match (MessageSenderType::from($message->sender->slug)) {
+                        MessageSenderType::Client => MessageAuthor::Client,
+                        MessageSenderType::Manager => MessageAuthor::Manager,
+                    };
+
+                    return new MessageSnapshot(
+                        id: $message->id,
+                        body: $message->body,
+                        sentAt: $message->sent_at,
+                        author: $author,
+                    );
+                })
                 ->values(),
         );
     }
@@ -56,28 +70,12 @@ class DialogueReaderAdapter implements DialogueReaderInterface
 
     private function canAccess(User $user, Dialogue $dialogue): bool
     {
-        return match ($user->resolveRole()) {
+        $userRole = UserRole::from($user->role->slug);
+
+        return match ($userRole) {
             UserRole::Admin => true,
             UserRole::Manager => $dialogue->manager_id === $user->id,
             UserRole::Client => false,
-        };
-    }
-
-    private function mapMessage(Message $message): MessageSnapshot
-    {
-        return new MessageSnapshot(
-            id: $message->id,
-            body: $message->body,
-            sentAt: $message->sent_at,
-            author: $this->mapAuthor($message->resolveSenderType()),
-        );
-    }
-
-    private function mapAuthor(MessageSenderType $senderType): MessageAuthor
-    {
-        return match ($senderType) {
-            MessageSenderType::Client => MessageAuthor::Client,
-            MessageSenderType::Manager => MessageAuthor::Manager,
         };
     }
 }

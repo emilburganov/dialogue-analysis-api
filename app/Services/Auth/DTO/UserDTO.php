@@ -17,14 +17,14 @@ readonly class UserDTO
 
     public static function fromModel(User $user): self
     {
-        $role = $user->resolveRole();
+        $role = UserRole::from($user->role->slug);
 
         return new self(
             id: $user->id,
             name: $user->name,
             email: $user->email,
             role: $role,
-            roleLabel: $user->roleLabel(),
+            roleLabel: $role->label(),
         );
     }
 

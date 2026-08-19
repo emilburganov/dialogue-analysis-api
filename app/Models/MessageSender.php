@@ -15,11 +15,12 @@ class MessageSender extends Model
         'label',
     ];
 
-    /**
-     * @return HasMany<Message, $this>
-     */
-    public function messages(): HasMany
-    {
-        return $this->hasMany(Message::class, 'sender_id');
-    }
+    // TODO: Remove me
+    // /**
+    //  * @return HasMany<Message, $this>
+    //  */
+    // public function messages(): HasMany
+    // {
+    //     return $this->hasMany(Message::class, 'sender_id');
+    // }
 }

@@ -15,11 +15,12 @@ class Role extends Model
         'label',
     ];
 
-    /**
-     * @return HasMany<User, $this>
-     */
-    public function users(): HasMany
-    {
-        return $this->hasMany(User::class);
-    }
+    // TODO: Remove me
+    // /**
+    //  * @return HasMany<User, $this>
+    //  */
+    // public function users(): HasMany
+    // {
+    //     return $this->hasMany(User::class);
+    // }
 }

@@ -23,9 +23,7 @@ use App\Services\Dialogue\Exceptions\DialogueAccessDeniedException;
 use App\Services\Dialogue\Exceptions\DialogueLimitReachedException;
 use App\Services\Dialogue\Exceptions\DialogueNotFoundException;
 use App\Services\Dialogue\Exceptions\NoManagersAvailableException;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 
 class DialogueService
 {
@@ -36,17 +34,22 @@ class DialogueService
      */
     public function list(User $user): array
     {
-        return $this->queryForUser($user)
+        $userRole = UserRole::from($user->role->slug);
+
+        $query = match ($userRole) {
+            UserRole::Admin => Dialogue::withTrashed(),
+            UserRole::Manager => Dialogue::withTrashed()->where('manager_id', $user->id),
+            UserRole::Client => Dialogue::query()->where('client_id', $user->id),
+        };
+
+        return $query
             ->whereHas('manager')
             ->whereHas('client')
             ->with([
                 'manager',
                 'client',
                 'result',
-                'messages' => fn ($query) => $query
-                                                ->with('sender')
-                                                ->orderByDesc('sent_at')
-                                                ->limit(1),
+                'messages' => fn ($query) => $query->with('sender')->orderByDesc('sent_at')->limit(1),
             ])
             ->get()
             ->sortByDesc(fn (Dialogue $dialogue) => $dialogue->messages->first()?->sent_at ?? $dialogue->updated_at)
@@ -62,7 +65,9 @@ class DialogueService
      */
     public function create(User $user): DialogueDetailDTO
     {
-        if ($user->resolveRole() !== UserRole::Client) {
+        $userRole = UserRole::from($user->role->slug);
+
+        if ($userRole !== UserRole::Client) {
             throw new DialogueAccessDeniedException('Только клиенты могут начинать новые диалоги.');
         }
 
@@ -111,7 +116,15 @@ class DialogueService
             throw new DialogueNotFoundException;
         }
 
-        if (! $this->canAccess($user, $dialogue)) {
+        $userRole = UserRole::from($user->role->slug);
+
+        $canAccess = match ($userRole) {
+            UserRole::Admin => true,
+            UserRole::Manager => $dialogue->manager_id === $user->id,
+            UserRole::Client => $dialogue->client_id === $user->id && ! $dialogue->trashed(),
+        };
+
+        if (! $canAccess) {
             throw new DialogueAccessDeniedException;
         }
 
@@ -140,7 +153,6 @@ class DialogueService
         $senderType = match (true) {
             $user->id === $dialogue->manager_id => MessageSenderType::Manager,
             $user->id === $dialogue->client_id => MessageSenderType::Client,
-            default => throw new DialogueAccessDeniedException('Вы не можете отправлять сообщения в этом диалоге.'),
         };
 
         $message = Message::query()->create([
@@ -163,7 +175,9 @@ class DialogueService
      */
     public function updateResult(User $user, int $id, DialogueResultType $result): DialogueDetailDTO
     {
-        if ($user->resolveRole() !== UserRole::Admin) {
+        $userRole = UserRole::from($user->role->slug);
+
+        if ($userRole !== UserRole::Admin) {
             throw new DialogueAccessDeniedException('Менять результат диалога может только администратор.');
         }
 
@@ -203,19 +217,13 @@ class DialogueService
             throw new DialogueNotFoundException;
         }
 
-        if ($user->resolveRole() !== UserRole::Client || $dialogue->client_id !== $user->id) {
+        $userRole = UserRole::from($user->role->slug);
+
+        if ($userRole !== UserRole::Client || $dialogue->client_id !== $user->id) {
             throw new DialogueAccessDeniedException('Только клиент может удалить свой диалог.');
         }
 
         $dialogue->delete();
-    }
-
-    private function audienceFor(User $user): DialogueAudience
-    {
-        return match ($user->resolveRole()) {
-            UserRole::Client => DialogueAudience::Client,
-            UserRole::Admin, UserRole::Manager => DialogueAudience::Staff,
-        };
     }
 
     /**
@@ -225,36 +233,17 @@ class DialogueService
     public function presentListCollection(array $dialogues, User $user, Request $request): array
     {
         return array_map(
-            fn (DialogueListItemDTO $dialogue) => $this->presentListItem($dialogue, $user, $request),
+            function (DialogueListItemDTO $dialogue) use ($user) {
+                return match ($this->audienceFor($user)) {
+                    DialogueAudience::Client => new ClientDialogueListItemResource($dialogue),
+                    DialogueAudience::Staff => new StaffDialogueListItemResource($dialogue),
+                };
+            },
             $dialogues,
         );
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function presentListItem(DialogueListItemDTO $dialogue, User $user, Request $request): array
-    {
-        return $this->listItemResource($dialogue, $user)->toArray($request);
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function presentDetail(DialogueDetailDTO $dialogue, User $user, Request $request): array
-    {
-        return $this->detailResource($dialogue, $user)->toArray($request);
-    }
-
-    private function listItemResource(DialogueListItemDTO $dialogue, User $user): JsonResource
-    {
-        return match ($this->audienceFor($user)) {
-            DialogueAudience::Client => new ClientDialogueListItemResource($dialogue),
-            DialogueAudience::Staff => new StaffDialogueListItemResource($dialogue),
-        };
-    }
-
-    private function detailResource(DialogueDetailDTO $dialogue, User $user): JsonResource
+    public function presentDetail(DialogueDetailDTO $dialogue, User $user)
     {
         return match ($this->audienceFor($user)) {
             DialogueAudience::Client => new ClientDialogueDetailResource($dialogue),
@@ -262,36 +251,17 @@ class DialogueService
         };
     }
 
-    /**
-     * @return Builder<Dialogue>
-     */
-    private function queryForUser(User $user): Builder
-    {
-        return match ($user->resolveRole()) {
-            UserRole::Admin => Dialogue::withTrashed(),
-            UserRole::Manager => Dialogue::withTrashed()->where('manager_id', $user->id),
-            UserRole::Client => Dialogue::query()->where('client_id', $user->id),
-        };
-    }
-
     private function findDialogue(int $id, User $user): ?Dialogue
     {
         $query = Dialogue::query()->with(['manager', 'client', 'result', 'messages.sender']);
 
-        if ($user->resolveRole() !== UserRole::Client) {
+        $userRole = UserRole::from($user->role->slug);
+
+        if ($userRole !== UserRole::Client) {
             $query->withTrashed();
         }
 
         return $query->find($id);
-    }
-
-    private function canAccess(User $user, Dialogue $dialogue): bool
-    {
-        return match ($user->resolveRole()) {
-            UserRole::Admin => true,
-            UserRole::Manager => $dialogue->manager_id === $user->id,
-            UserRole::Client => $dialogue->client_id === $user->id && ! $dialogue->trashed(),
-        };
     }
 
     private function canSendMessages(User $user, Dialogue $dialogue): bool
@@ -300,10 +270,22 @@ class DialogueService
             return false;
         }
 
-        return match ($user->resolveRole()) {
+        $userRole = UserRole::from($user->role->slug);
+
+        return match ($userRole) {
             UserRole::Admin => false,
             UserRole::Manager => $dialogue->manager_id === $user->id,
             UserRole::Client => $dialogue->client_id === $user->id,
+        };
+    }
+
+    private function audienceFor(User $user): DialogueAudience
+    {
+        $userRole = UserRole::from($user->role->slug);
+
+        return match ($userRole) {
+            UserRole::Client => DialogueAudience::Client,
+            UserRole::Admin, UserRole::Manager => DialogueAudience::Staff,
         };
     }
 }

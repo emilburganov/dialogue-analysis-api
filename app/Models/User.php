@@ -39,38 +39,44 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class);
     }
 
-    public function resolveRole(): UserRole
-    {
-        $this->loadMissing('role');
+    // TODO: Remove me
+    // public function resolveRole(): UserRole
+    // {
+    //     $this->loadMissing('role');
 
-        if ($this->role === null) {
-            return UserRole::Client;
-        }
+    //     if ($this->role === null) {
+    //         return UserRole::Client;
+    //     }
 
-        return UserRole::from($this->role->slug);
-    }
+    //     return UserRole::from($this->role->slug);
+    // }
 
-    public function roleLabel(): string
-    {
-        $this->loadMissing('role');
+    // TODO: Remove me
+    // public function roleLabel(): string
+    // {
+    //     $this->loadMissing('role');
 
-        return $this->role?->label ?? $this->resolveRole()->label();
-    }
+    //     return $this->role?->label ?? $this->resolveRole()->label();
+    // }
 
     public function isAdmin(): bool
     {
-        return $this->resolveRole() === UserRole::Admin;
+        $userRole = UserRole::from($this->role->slug);
+
+        return $userRole === UserRole::Admin;
     }
 
-    public function isManager(): bool
-    {
-        return $this->resolveRole() === UserRole::Manager;
-    }
+    // TODO: Remove me
+    // public function isManager(): bool
+    // {
+    //     return $this->resolveRole() === UserRole::Manager;
+    // }
 
-    public function isClient(): bool
-    {
-        return $this->resolveRole() === UserRole::Client;
-    }
+    // TODO: Remove me
+    // public function isClient(): bool
+    // {
+    //     return $this->resolveRole() === UserRole::Client;
+    // }
 
     /**
      * @return HasMany<Dialogue, $this>

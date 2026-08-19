@@ -30,13 +30,14 @@ class Message extends Model
         ];
     }
 
-    /**
-     * @return BelongsTo<Dialogue, $this>
-     */
-    public function dialogue(): BelongsTo
-    {
-        return $this->belongsTo(Dialogue::class);
-    }
+    // TODO: Remove me
+    // /**
+    //  * @return BelongsTo<Dialogue, $this>
+    //  */
+    // public function dialogue(): BelongsTo
+    // {
+    //     return $this->belongsTo(Dialogue::class);
+    // }
 
     /**
      * @return BelongsTo<MessageSender, $this>
