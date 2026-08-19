@@ -13,7 +13,6 @@ class DialogueAnalysisEvent extends Model
     protected $fillable = [
         'dialogue_id',
         'analysis_rule_id',
-        'severity',
         'title',
         'description',
         'message_ids',

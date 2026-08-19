@@ -6,12 +6,9 @@ use App\Models\AnalysisRule;
 use App\Services\Analysis\AnalysisContext;
 use App\Services\Analysis\AnalysisRuleInterface;
 use App\Services\Analysis\DTO\AnalysisEventDraftDTO;
-use App\Services\Analysis\Rules\Concerns\ResolvesRuleSeverity;
 
 class UnansweredClientRule implements AnalysisRuleInterface
 {
-    use ResolvesRuleSeverity;
-
     public function type(): string
     {
         return 'unanswered_client';
@@ -28,7 +25,6 @@ class UnansweredClientRule implements AnalysisRuleInterface
         return [
             new AnalysisEventDraftDTO(
                 analysisRuleId: $rule->id,
-                severity: $this->severity($rule),
                 title: sprintf('Клиент ждёт ответ на сообщение №%d', $lastMessage->id),
                 description: 'Последнее сообщение в диалоге отправил клиент — менеджер ещё не ответил.',
                 messageIds: [$lastMessage->id],

@@ -53,7 +53,7 @@ class AnalysisRuleTypeSeeder extends Seeder
                 'updated_at' => $now,
             ],
             [
-                'name' => 'Возражение клиента',
+                'name' => 'Ключевые слова',
                 'description' => 'Ищет ключевые слова возражений в сообщениях клиента.',
                 'default_severity' => 'low',
                 'config_schema' => json_encode([

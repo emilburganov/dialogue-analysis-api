@@ -14,15 +14,18 @@ return new class extends Migration
                 ->foreignId('dialogue_id')
                 ->constrained()
                 ->cascadeOnDelete();
-            $table->foreignId('analysis_rule_id')->constrained('analysis_rules');
-            $table->string('severity');
+            $table
+                ->foreignId('analysis_rule_id')
+                ->constrained('analysis_rules')
+                ->cascadeOnUpdate()
+                ->cascadeOnDelete();
             $table->string('title');
             $table->text('description');
             $table->json('message_ids');
             $table->json('context')->nullable();
             $table->timestamps();
 
-            $table->index(['dialogue_id', 'severity']);
+            $table->index('dialogue_id');
         });
     }
 

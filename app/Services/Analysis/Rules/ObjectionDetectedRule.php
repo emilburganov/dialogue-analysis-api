@@ -7,12 +7,9 @@ use App\Services\Analysis\AnalysisContext;
 use App\Services\Analysis\AnalysisRuleInterface;
 use App\Services\Analysis\DTO\AnalysisEventDraftDTO;
 use App\Services\Analysis\DTO\MessageSnapshot;
-use App\Services\Analysis\Rules\Concerns\ResolvesRuleSeverity;
 
 class ObjectionDetectedRule implements AnalysisRuleInterface
 {
-    use ResolvesRuleSeverity;
-
     public function type(): string
     {
         return 'objection_detected';
@@ -36,8 +33,7 @@ class ObjectionDetectedRule implements AnalysisRuleInterface
 
             $events[] = new AnalysisEventDraftDTO(
                 analysisRuleId: $rule->id,
-                severity: $this->severity($rule),
-                title: 'Обнаружено возможное возражение клиента',
+                title: 'Обнаружены ключевые слова в диалоге',
                 description: sprintf(
                     'В сообщении №%d найдена ключевая фраза «%s».',
                     $message->id,

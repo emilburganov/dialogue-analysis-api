@@ -27,8 +27,9 @@ readonly class AnalysisEventDTO
 
     public static function fromModel(DialogueAnalysisEvent $event): self
     {
-        $severity = AnalysisSeverity::from($event->severity);
-        $event->loadMissing('rule');
+        $event->load('rule');
+
+        $severity = AnalysisSeverity::from($event->rule->default_severity);
 
         return new self(
             id: $event->id,

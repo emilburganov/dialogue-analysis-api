@@ -33,7 +33,7 @@ class AnalysisRuleSeeder extends Seeder
             ],
             [
                 'executor_class' => ObjectionDetectedRule::class,
-                'name' => 'Возражение клиента',
+                'name' => 'Ключевые слова',
                 'description' => 'В сообщении клиента обнаружены признаки возражения или сомнения.',
             ],
             [

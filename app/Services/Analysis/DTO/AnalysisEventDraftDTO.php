@@ -2,8 +2,6 @@
 
 namespace App\Services\Analysis\DTO;
 
-use App\Services\Analysis\Enums\AnalysisSeverity;
-
 readonly class AnalysisEventDraftDTO
 {
     /**
@@ -12,7 +10,6 @@ readonly class AnalysisEventDraftDTO
      */
     public function __construct(
         public int $analysisRuleId,
-        public AnalysisSeverity $severity,
         public string $title,
         public string $description,
         public array $messageIds,

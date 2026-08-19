@@ -6,12 +6,10 @@ use App\Models\AnalysisRule;
 use App\Services\Analysis\AnalysisContext;
 use App\Services\Analysis\AnalysisRuleInterface;
 use App\Services\Analysis\DTO\AnalysisEventDraftDTO;
-use App\Services\Analysis\Rules\Concerns\ResolvesRuleSeverity;
+use App\Services\Analysis\DTO\MessageSnapshot;
 
 class ClientEscalationRule implements AnalysisRuleInterface
 {
-    use ResolvesRuleSeverity;
-
     public function type(): string
     {
         return 'client_escalation';
@@ -54,7 +52,6 @@ class ClientEscalationRule implements AnalysisRuleInterface
 
         return new AnalysisEventDraftDTO(
             analysisRuleId: $rule->id,
-            severity: $this->severity($rule),
             title: sprintf('Клиент отправил %d сообщения подряд без ответа', count($messages)),
             description: 'Клиент несколько раз подряд написал менеджеру — возможно, вопрос остался без внимания.',
             messageIds: $ids,

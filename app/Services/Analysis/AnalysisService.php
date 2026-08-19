@@ -52,7 +52,6 @@ class AnalysisService
             DialogueAnalysisEvent::query()->create([
                 'dialogue_id' => $snapshot->id,
                 'analysis_rule_id' => $draft->analysisRuleId,
-                'severity' => $draft->severity->value,
                 'title' => $draft->title,
                 'description' => $draft->description,
                 'message_ids' => $draft->messageIds,
@@ -67,7 +66,9 @@ class AnalysisService
             ->where('dialogue_id', $snapshot->id)
             ->get()
             ->sortBy(
-                fn (DialogueAnalysisEvent $event) => AnalysisSeverity::from($event->severity)->getSeverityWeight()
+                fn (DialogueAnalysisEvent $event) => AnalysisSeverity::from(
+                    $event->rule?->default_severity ?? AnalysisSeverity::Medium->value
+                )->getSeverityWeight()
             )
             ->map(
                 fn (DialogueAnalysisEvent $event) => AnalysisEventDTO::fromModel($event)
@@ -81,14 +82,5 @@ class AnalysisService
             analyzedAt: $now,
             events: $events,
         );
-    }
-
-    private function severityWeight(string $severity): int
-    {
-        return match ($severity) {
-            AnalysisSeverity::High->value => 0,
-            AnalysisSeverity::Medium->value => 1,
-            AnalysisSeverity::Low->value => 2,
-        };
     }
 }

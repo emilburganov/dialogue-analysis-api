@@ -6,12 +6,9 @@ use App\Models\AnalysisRule;
 use App\Services\Analysis\AnalysisContext;
 use App\Services\Analysis\AnalysisRuleInterface;
 use App\Services\Analysis\DTO\AnalysisEventDraftDTO;
-use App\Services\Analysis\Rules\Concerns\ResolvesRuleSeverity;
 
 class SlowManagerResponseRule implements AnalysisRuleInterface
 {
-    use ResolvesRuleSeverity;
-
     public function type(): string
     {
         return 'slow_response';
@@ -39,7 +36,6 @@ class SlowManagerResponseRule implements AnalysisRuleInterface
 
             $events[] = new AnalysisEventDraftDTO(
                 analysisRuleId: $rule->id,
-                severity: $this->severity($rule),
                 title: sprintf('Менеджер ответил через %d мин.', $delayMinutes),
                 description: sprintf(
                     'Клиент написал сообщение №%d, менеджер ответил через %d минут (порог — %d мин.).',
