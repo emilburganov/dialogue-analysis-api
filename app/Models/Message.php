@@ -30,31 +30,11 @@ class Message extends Model
         ];
     }
 
-    // TODO: Remove me
-    // /**
-    //  * @return BelongsTo<Dialogue, $this>
-    //  */
-    // public function dialogue(): BelongsTo
-    // {
-    //     return $this->belongsTo(Dialogue::class);
-    // }
-
     /**
      * @return BelongsTo<MessageSender, $this>
      */
     public function sender(): BelongsTo
     {
         return $this->belongsTo(MessageSender::class);
-    }
-
-    public function resolveSenderType(): MessageSenderType
-    {
-        $this->loadMissing('sender');
-
-        if ($this->sender === null) {
-            return MessageSenderType::Client;
-        }
-
-        return MessageSenderType::from($this->sender->slug);
     }
 }

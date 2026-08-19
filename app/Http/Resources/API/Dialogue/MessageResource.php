@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources\API\Dialogue;
 
-use App\Services\Dialogue\DTO\MessageDTO;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 

@@ -14,13 +14,4 @@ class MessageSender extends Model
         'slug',
         'label',
     ];
-
-    // TODO: Remove me
-    // /**
-    //  * @return HasMany<Message, $this>
-    //  */
-    // public function messages(): HasMany
-    // {
-    //     return $this->hasMany(Message::class, 'sender_id');
-    // }
 }

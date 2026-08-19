@@ -39,44 +39,12 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class);
     }
 
-    // TODO: Remove me
-    // public function resolveRole(): UserRole
-    // {
-    //     $this->loadMissing('role');
-
-    //     if ($this->role === null) {
-    //         return UserRole::Client;
-    //     }
-
-    //     return UserRole::from($this->role->slug);
-    // }
-
-    // TODO: Remove me
-    // public function roleLabel(): string
-    // {
-    //     $this->loadMissing('role');
-
-    //     return $this->role?->label ?? $this->resolveRole()->label();
-    // }
-
     public function isAdmin(): bool
     {
         $userRole = UserRole::from($this->role->slug);
 
         return $userRole === UserRole::Admin;
     }
-
-    // TODO: Remove me
-    // public function isManager(): bool
-    // {
-    //     return $this->resolveRole() === UserRole::Manager;
-    // }
-
-    // TODO: Remove me
-    // public function isClient(): bool
-    // {
-    //     return $this->resolveRole() === UserRole::Client;
-    // }
 
     /**
      * @return HasMany<Dialogue, $this>

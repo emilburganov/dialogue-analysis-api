@@ -2,10 +2,6 @@
 
 namespace App\Services\Dialogue;
 
-use App\Http\Resources\API\Dialogue\ClientDialogueDetailResource;
-use App\Http\Resources\API\Dialogue\ClientDialogueListItemResource;
-use App\Http\Resources\API\Dialogue\StaffDialogueDetailResource;
-use App\Http\Resources\API\Dialogue\StaffDialogueListItemResource;
 use App\Models\Dialogue;
 use App\Models\DialogueResult;
 use App\Models\Message;
@@ -16,14 +12,12 @@ use App\Services\Dialogue\DTO\DialogueDetailDTO;
 use App\Services\Dialogue\DTO\DialogueListItemDTO;
 use App\Services\Dialogue\DTO\MessageDTO;
 use App\Services\Dialogue\DTO\SendMessageDTO;
-use App\Services\Dialogue\Enums\DialogueAudience;
 use App\Services\Dialogue\Enums\DialogueResultType;
 use App\Services\Dialogue\Enums\MessageSenderType;
 use App\Services\Dialogue\Exceptions\DialogueAccessDeniedException;
 use App\Services\Dialogue\Exceptions\DialogueLimitReachedException;
 use App\Services\Dialogue\Exceptions\DialogueNotFoundException;
 use App\Services\Dialogue\Exceptions\NoManagersAvailableException;
-use Illuminate\Http\Request;
 
 class DialogueService
 {
@@ -226,31 +220,6 @@ class DialogueService
         $dialogue->delete();
     }
 
-    /**
-     * @param  list<DialogueListItemDTO>  $dialogues
-     * @return list<array<string, mixed>>
-     */
-    public function presentListCollection(array $dialogues, User $user, Request $request): array
-    {
-        return array_map(
-            function (DialogueListItemDTO $dialogue) use ($user) {
-                return match ($this->audienceFor($user)) {
-                    DialogueAudience::Client => new ClientDialogueListItemResource($dialogue),
-                    DialogueAudience::Staff => new StaffDialogueListItemResource($dialogue),
-                };
-            },
-            $dialogues,
-        );
-    }
-
-    public function presentDetail(DialogueDetailDTO $dialogue, User $user)
-    {
-        return match ($this->audienceFor($user)) {
-            DialogueAudience::Client => new ClientDialogueDetailResource($dialogue),
-            DialogueAudience::Staff => new StaffDialogueDetailResource($dialogue),
-        };
-    }
-
     private function findDialogue(int $id, User $user): ?Dialogue
     {
         $query = Dialogue::query()->with(['manager', 'client', 'result', 'messages.sender']);
@@ -276,16 +245,6 @@ class DialogueService
             UserRole::Admin => false,
             UserRole::Manager => $dialogue->manager_id === $user->id,
             UserRole::Client => $dialogue->client_id === $user->id,
-        };
-    }
-
-    private function audienceFor(User $user): DialogueAudience
-    {
-        $userRole = UserRole::from($user->role->slug);
-
-        return match ($userRole) {
-            UserRole::Client => DialogueAudience::Client,
-            UserRole::Admin, UserRole::Manager => DialogueAudience::Staff,
         };
     }
 }

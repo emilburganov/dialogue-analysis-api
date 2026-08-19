@@ -5,6 +5,8 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\API\Dialogue\SendMessageRequest;
 use App\Http\Requests\API\Dialogue\UpdateDialogueResultRequest;
+use App\Http\Resources\API\Dialogue\DialogueDetailResourceResolver;
+use App\Http\Resources\API\Dialogue\DialogueListItemResourceResolver;
 use App\Http\Resources\API\Dialogue\MessageResource;
 use App\Services\Dialogue\DialogueService;
 use App\Services\Dialogue\Enums\DialogueResultType;
@@ -35,7 +37,7 @@ class DialogueController extends Controller
         }
 
         return response()->json(
-            $this->dialogueService->presentDetail($dialogue, $request->user(), $request),
+            DialogueDetailResourceResolver::resolve($dialogue, $request->user()),
             201,
         );
     }
@@ -45,7 +47,7 @@ class DialogueController extends Controller
         $dialogues = $this->dialogueService->list($request->user());
 
         return response()->json([
-            'data' => $this->dialogueService->presentListCollection($dialogues, $request->user(), $request),
+            'data' => DialogueListItemResourceResolver::resolve($dialogues, $request->user()),
         ]);
     }
 
@@ -60,7 +62,7 @@ class DialogueController extends Controller
         }
 
         return response()->json(
-            $this->dialogueService->presentDetail($dialogue, $request->user(), $request),
+            DialogueDetailResourceResolver::resolve($dialogue, $request->user())
         );
     }
 
@@ -92,7 +94,7 @@ class DialogueController extends Controller
         }
 
         return response()->json(
-            (new MessageResource($message))->toArray($request),
+            MessageResource::make($message),
             201,
         );
     }
@@ -112,7 +114,7 @@ class DialogueController extends Controller
         }
 
         return response()->json(
-            $this->dialogueService->presentDetail($dialogue, $request->user(), $request),
+            DialogueDetailResourceResolver::resolve($dialogue, $request->user()),
         );
     }
 }
