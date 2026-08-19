@@ -22,6 +22,18 @@ class SendMessageRequest extends FormRequest
         ];
     }
 
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'body.required' => 'Введите текст сообщения.',
+            'body.string' => 'Текст сообщения должен быть строкой.',
+            'body.max' => 'Сообщение не должно превышать 5000 символов.',
+        ];
+    }
+
     public function toDto(): SendMessageDTO
     {
         return SendMessageDTO::fromArray($this->validated());
