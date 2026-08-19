@@ -10,8 +10,16 @@ return new class extends Migration
     {
         Schema::create('messages', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('dialogue_id')->constrained()->cascadeOnDelete();
-            $table->string('sender');
+            $table
+                ->foreignId('dialogue_id')
+                ->constrained()
+                ->cascadeOnUpdate()
+                ->cascadeOnDelete();
+            $table
+                ->foreignId('sender_id')
+                ->constrained('message_senders')
+                ->cascadeOnUpdate()
+                ->cascadeOnDelete();
             $table->text('body');
             $table->timestamp('sent_at');
             $table->timestamps();

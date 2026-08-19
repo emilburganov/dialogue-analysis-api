@@ -12,8 +12,18 @@ class DialogueResultSeeder extends Seeder
         $now = now();
 
         DB::table('dialogue_results')->upsert([
-            ['slug' => 'bought', 'label' => 'Купил', 'created_at' => $now, 'updated_at' => $now],
-            ['slug' => 'not_bought', 'label' => 'Не купил', 'created_at' => $now, 'updated_at' => $now],
+            [
+                'slug' => 'bought',
+                'label' => 'Купил',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'slug' => 'not_bought',
+                'label' => 'Не купил',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
         ], uniqueBy: ['slug'], update: ['label', 'updated_at']);
     }
 }

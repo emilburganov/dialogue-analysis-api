@@ -8,17 +8,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('dialogues', function (Blueprint $table) {
+        Schema::create('message_senders', function (Blueprint $table) {
             $table->id();
-            $table->string('manager_name');
-            $table->string('client_name');
-            $table->string('result');
+            $table->string('slug')->unique();
+            $table->string('label');
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('dialogues');
+        Schema::dropIfExists('message_senders');
     }
 };

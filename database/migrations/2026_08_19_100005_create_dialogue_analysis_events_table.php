@@ -10,7 +10,10 @@ return new class extends Migration
     {
         Schema::create('dialogue_analysis_events', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('dialogue_id')->constrained()->cascadeOnDelete();
+            $table
+                ->foreignId('dialogue_id')
+                ->constrained()
+                ->cascadeOnDelete();
             $table->string('rule_slug');
             $table->string('severity');
             $table->string('title');

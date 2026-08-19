@@ -12,9 +12,24 @@ class RoleSeeder extends Seeder
         $now = now();
 
         DB::table('roles')->upsert([
-            ['slug' => 'admin', 'label' => 'Администратор', 'created_at' => $now, 'updated_at' => $now],
-            ['slug' => 'manager', 'label' => 'Менеджер', 'created_at' => $now, 'updated_at' => $now],
-            ['slug' => 'client', 'label' => 'Клиент', 'created_at' => $now, 'updated_at' => $now],
+            [
+                'slug' => 'admin',
+                'label' => 'Администратор',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'slug' => 'manager',
+                'label' => 'Менеджер',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'slug' => 'client',
+                'label' => 'Клиент',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
         ], uniqueBy: ['slug'], update: ['label', 'updated_at']);
     }
 }

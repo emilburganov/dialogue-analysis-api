@@ -12,8 +12,17 @@ class MessageSenderSeeder extends Seeder
         $now = now();
 
         DB::table('message_senders')->upsert([
-            ['slug' => 'manager', 'label' => 'Менеджер', 'created_at' => $now, 'updated_at' => $now],
-            ['slug' => 'client', 'label' => 'Клиент', 'created_at' => $now, 'updated_at' => $now],
+            [
+                'slug' => 'manager',
+                'label' => 'Менеджер',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'slug' => 'client',
+                'label' => 'Клиент',
+                'created_at' => $now,
+                'updated_at' => $now],
         ], uniqueBy: ['slug'], update: ['label', 'updated_at']);
     }
 }

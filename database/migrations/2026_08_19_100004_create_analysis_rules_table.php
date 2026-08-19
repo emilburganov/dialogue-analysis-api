@@ -11,8 +11,13 @@ return new class extends Migration
         Schema::create('analysis_rules', function (Blueprint $table) {
             $table->id();
             $table->string('slug')->unique();
+            $table->string('rule_type');
             $table->string('name');
             $table->text('description');
+            $table->string('default_severity')->default('medium');
+            $table->boolean('is_enabled')->default(true);
+            $table->boolean('is_system')->default(false);
+            $table->json('config')->nullable();
             $table->timestamps();
         });
     }
