@@ -56,11 +56,4 @@ class Message extends Model
 
         return MessageSenderType::from($this->sender->slug);
     }
-
-    public function senderLabel(): string
-    {
-        $this->loadMissing('sender');
-
-        return $this->sender?->label ?? $this->resolveSenderType()->label();
-    }
 }

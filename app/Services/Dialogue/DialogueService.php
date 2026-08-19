@@ -43,7 +43,10 @@ class DialogueService
                 'manager',
                 'client',
                 'result',
-                'messages' => fn ($query) => $query->with('sender')->orderByDesc('sent_at')->limit(1),
+                'messages' => fn ($query) => $query
+                                                ->with('sender')
+                                                ->orderByDesc('sent_at')
+                                                ->limit(1),
             ])
             ->get()
             ->sortByDesc(fn (Dialogue $dialogue) => $dialogue->messages->first()?->sent_at ?? $dialogue->updated_at)

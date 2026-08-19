@@ -18,10 +18,12 @@ readonly class MessageDTO
 
     public static function fromModel(Message $message): self
     {
+        $messageSenderType = MessageSenderType::from($message->sender->slug);
+
         return new self(
             id: $message->id,
-            sender: $message->resolveSenderType(),
-            senderLabel: $message->senderLabel(),
+            sender: $messageSenderType,
+            senderLabel: $messageSenderType->label(),
             body: $message->body,
             sentAt: $message->sent_at,
         );

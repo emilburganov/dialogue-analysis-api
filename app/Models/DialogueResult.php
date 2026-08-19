@@ -14,12 +14,4 @@ class DialogueResult extends Model
         'slug',
         'label',
     ];
-
-    /**
-     * @return HasMany<Dialogue, $this>
-     */
-    public function dialogues(): HasMany
-    {
-        return $this->hasMany(Dialogue::class, 'result_id');
-    }
 }

@@ -20,12 +20,14 @@ readonly class DialogueDetailDTO
 
     public static function fromModel(Dialogue $dialogue, bool $canSendMessages): self
     {
+        $dialogueResultType = DialogueResultType::from($dialogue->result->slug);
+
         return new self(
             id: $dialogue->id,
-            managerName: $dialogue->managerName(),
-            clientName: $dialogue->clientName(),
-            result: $dialogue->resolveResultType(),
-            resultLabel: $dialogue->resultLabel(),
+            managerName: $dialogue->manager->name,
+            clientName: $dialogue->client->name,
+            result: $dialogueResultType,
+            resultLabel: $dialogueResultType->label(),
             canSendMessages: $canSendMessages,
             deletedByClient: $dialogue->trashed(),
             messages: $dialogue->messages

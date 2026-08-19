@@ -26,12 +26,14 @@ readonly class DialogueListItemDTO
             ->get()
             ->last();
 
+        $dialogueResultType = DialogueResultType::from($dialogue->result->slug);
+
         return new self(
             id: $dialogue->id,
-            managerName: $dialogue->managerName(),
-            clientName: $dialogue->clientName(),
-            result: $dialogue->resolveResultType(),
-            resultLabel: $dialogue->resultLabel(),
+            managerName: $dialogue->manager->name,
+            clientName: $dialogue->client->name,
+            result: $dialogueResultType,
+            resultLabel: $dialogueResultType->label(),
             lastMessageAt: $lastMessage?->sent_at ?? $dialogue->updated_at,
             preview: $lastMessage?->body ?? '',
             deletedByClient: $dialogue->trashed(),
