@@ -2,6 +2,7 @@
 
 namespace App\Services\Auth\DTO;
 
+use App\Services\Auth\Enums\UserRole;
 use App\Models\User;
 
 readonly class UserDTO
@@ -10,19 +11,31 @@ readonly class UserDTO
         public int $id,
         public string $name,
         public string $email,
+        public UserRole $role,
+        public string $roleLabel,
     ) {}
 
     public static function fromModel(User $user): self
     {
+        $role = $user->resolveRole();
+
         return new self(
             id: $user->id,
             name: $user->name,
             email: $user->email,
+            role: $role,
+            roleLabel: $user->roleLabel(),
         );
     }
 
     /**
-     * @return array{id: int, name: string, email: string}
+     * @return array{
+     *     id: int,
+     *     name: string,
+     *     email: string,
+     *     role: string,
+     *     role_label: string
+     * }
      */
     public function toArray(): array
     {
@@ -30,6 +43,8 @@ readonly class UserDTO
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
+            'role' => $this->role->value,
+            'role_label' => $this->roleLabel,
         ];
     }
 }

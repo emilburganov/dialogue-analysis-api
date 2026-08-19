@@ -17,19 +17,23 @@ docker compose up -d --build
 - устанавливаются зависимости Composer
 - выполняются миграции и сидер
 
-Тестовый пользователь:
-- Email: `admin@example.com`
-- Password: `password`
+Тестовые пользователи (пароль: `password`):
+- `admin@example.com` — администратор, видит все диалоги
+- `anna@example.com` — менеджер, видит только свои диалоги
+- `igor@example.com` — клиент, видит только свои диалоги
 
-## API авторизации
+## API
 
 | Метод | URL | Описание |
 |-------|-----|----------|
-| POST | `/api/login` | Получить Bearer token |
+| POST | `/api/login` | Авторизация |
 | GET | `/api/me` | Текущий пользователь |
-| POST | `/api/logout` | Отозвать token |
+| POST | `/api/logout` | Выход |
+| GET | `/api/dialogues` | Список диалогов |
+| GET | `/api/dialogues/{id}` | Диалог с сообщениями |
+| POST | `/api/dialogues/{id}/messages` | Отправить сообщение |
 
-Заголовок для защищённых маршрутов: `Authorization: Bearer {token}`
+Заголовок: `Authorization: Bearer {token}`
 
 ## Адреса
 
