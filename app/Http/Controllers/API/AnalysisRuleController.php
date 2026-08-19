@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\API\Analysis\StoreAnalysisRuleRequest;
+use App\Http\Requests\API\Analysis\UpdateAnalysisRuleRequest;
 use App\Http\Resources\API\Analysis\AnalysisRuleResource;
 use App\Http\Resources\API\Analysis\AnalysisRuleTypeResource;
 use App\Services\Analysis\AnalysisRuleManagementService;
@@ -51,10 +53,10 @@ class AnalysisRuleController extends Controller
         ]);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreAnalysisRuleRequest $request): JsonResponse
     {
         try {
-            $rule = $this->ruleService->create($request->user(), $request->all());
+            $rule = $this->ruleService->create($request->user(), $request->validated());
         } catch (AnalysisRuleAccessDeniedException $e) {
             return response()->json(['message' => $e->getMessage()], 403);
         } catch (AnalysisRuleValidationException $e) {
@@ -66,10 +68,10 @@ class AnalysisRuleController extends Controller
         ], 201);
     }
 
-    public function update(Request $request, int $id): JsonResponse
+    public function update(UpdateAnalysisRuleRequest $request, int $id): JsonResponse
     {
         try {
-            $rule = $this->ruleService->update($request->user(), $id, $request->all());
+            $rule = $this->ruleService->update($request->user(), $id, $request->validated());
         } catch (AnalysisRuleAccessDeniedException $e) {
             return response()->json(['message' => $e->getMessage()], 403);
         } catch (AnalysisRuleNotFoundException $e) {

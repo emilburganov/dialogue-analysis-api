@@ -12,7 +12,6 @@ class AnalysisRule extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'slug',
         'rule_type_id',
         'name',
         'description',

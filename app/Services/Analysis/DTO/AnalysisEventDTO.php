@@ -15,7 +15,6 @@ readonly class AnalysisEventDTO
     public function __construct(
         public int $id,
         public int $analysisRuleId,
-        public string $ruleSlug,
         public string $ruleName,
         public AnalysisSeverity $severity,
         public string $severityLabel,
@@ -34,7 +33,6 @@ readonly class AnalysisEventDTO
         return new self(
             id: $event->id,
             analysisRuleId: $event->analysis_rule_id,
-            ruleSlug: $event->rule?->slug ?? '',
             ruleName: $event->rule?->name ?? '',
             severity: $severity,
             severityLabel: $severity->label(),

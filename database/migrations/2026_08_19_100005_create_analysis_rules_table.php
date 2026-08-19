@@ -10,7 +10,6 @@ return new class extends Migration
     {
         Schema::create('analysis_rules', function (Blueprint $table) {
             $table->id();
-            $table->string('slug')->unique();
             $table
                 ->foreignId('rule_type_id')
                 ->constrained('analysis_rule_types')

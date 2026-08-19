@@ -4,8 +4,10 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\API\Dialogue\SendMessageRequest;
+use App\Http\Requests\API\Dialogue\UpdateDialogueResultRequest;
 use App\Http\Resources\API\Dialogue\MessageResource;
 use App\Services\Dialogue\DialogueService;
+use App\Services\Dialogue\Enums\DialogueResultType;
 use App\Services\Dialogue\Exceptions\DialogueAccessDeniedException;
 use App\Services\Dialogue\Exceptions\DialogueLimitReachedException;
 use App\Services\Dialogue\Exceptions\DialogueNotFoundException;
@@ -92,6 +94,25 @@ class DialogueController extends Controller
         return response()->json(
             (new MessageResource($message))->toArray($request),
             201,
+        );
+    }
+
+    public function updateResult(UpdateDialogueResultRequest $request, int $id): JsonResponse
+    {
+        try {
+            $dialogue = $this->dialogueService->updateResult(
+                user: $request->user(),
+                id: $id,
+                result: DialogueResultType::from($request->validated('result')),
+            );
+        } catch (DialogueNotFoundException $e) {
+            return response()->json(['message' => $e->getMessage()], 404);
+        } catch (DialogueAccessDeniedException $e) {
+            return response()->json(['message' => $e->getMessage()], 403);
+        }
+
+        return response()->json(
+            $this->dialogueService->presentDetail($dialogue, $request->user(), $request),
         );
     }
 }

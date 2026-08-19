@@ -17,6 +17,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/dialogues/{id}', [DialogueController::class, 'show']);
     Route::get('/dialogues/{id}/analysis', [AnalysisController::class, 'show']);
     Route::delete('/dialogues/{id}', [DialogueController::class, 'destroy']);
+    Route::patch('/dialogues/{id}/result', [DialogueController::class, 'updateResult']);
     Route::post('/dialogues/{id}/messages', [DialogueController::class, 'sendMessage']);
 
     Route::get('/analysis-rules/types', [AnalysisRuleController::class, 'types']);

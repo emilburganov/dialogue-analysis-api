@@ -11,7 +11,6 @@ class AnalysisRuleType extends Model
      * @var list<string>
      */
     protected $fillable = [
-        'slug',
         'name',
         'description',
         'default_severity',
@@ -47,13 +46,24 @@ class AnalysisRuleType extends Model
         foreach ($this->config_schema as $field) {
             $value = $field['default'] ?? null;
 
-            if (($field['type'] ?? null) === 'keywords' && is_string($value)) {
-                $config[$field['key']] = array_values(array_filter(
-                    array_map('trim', explode(',', $value)),
-                    fn ($keyword) => $keyword !== '',
-                ));
+            if (($field['type'] ?? null) === 'keywords') {
+                if (is_string($value)) {
+                    $config[$field['key']] = array_values(array_filter(
+                        array_map('trim', explode(',', $value)),
+                        fn ($keyword) => $keyword !== '',
+                    ));
 
-                continue;
+                    continue;
+                }
+
+                if (is_array($value)) {
+                    $config[$field['key']] = array_values(array_filter(
+                        array_map('trim', array_map('strval', $value)),
+                        fn ($keyword) => $keyword !== '',
+                    ));
+
+                    continue;
+                }
             }
 
             $config[$field['key']] = $value;

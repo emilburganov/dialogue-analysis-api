@@ -9,9 +9,7 @@ readonly class AnalysisRuleDTO
      */
     public function __construct(
         public int $id,
-        public string $slug,
         public int $ruleTypeId,
-        public string $ruleType,
         public string $name,
         public ?string $description,
         public string $defaultSeverity,

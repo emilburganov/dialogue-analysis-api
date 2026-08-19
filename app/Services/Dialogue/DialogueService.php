@@ -161,6 +161,40 @@ class DialogueService
      * @throws DialogueNotFoundException
      * @throws DialogueAccessDeniedException
      */
+    public function updateResult(User $user, int $id, DialogueResultType $result): DialogueDetailDTO
+    {
+        if ($user->resolveRole() !== UserRole::Admin) {
+            throw new DialogueAccessDeniedException('Менять результат диалога может только администратор.');
+        }
+
+        $dialogue = $this->findDialogue($id, $user);
+
+        if ($dialogue === null) {
+            throw new DialogueNotFoundException;
+        }
+
+        $resultId = DialogueResult::query()
+            ->where('slug', $result->value)
+            ->value('id');
+
+        if ($resultId === null) {
+            throw new DialogueNotFoundException;
+        }
+
+        $dialogue->result_id = $resultId;
+        $dialogue->save();
+        $dialogue->load(['manager', 'client', 'result', 'messages.sender']);
+
+        return DialogueDetailDTO::fromModel(
+            dialogue: $dialogue,
+            canSendMessages: $this->canSendMessages($user, $dialogue),
+        );
+    }
+
+    /**
+     * @throws DialogueNotFoundException
+     * @throws DialogueAccessDeniedException
+     */
     public function delete(User $user, int $id): void
     {
         $dialogue = Dialogue::query()->find($id);

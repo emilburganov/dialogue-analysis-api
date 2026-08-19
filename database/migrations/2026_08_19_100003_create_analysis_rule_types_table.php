@@ -10,12 +10,11 @@ return new class extends Migration
     {
         Schema::create('analysis_rule_types', function (Blueprint $table) {
             $table->id();
-            $table->string('slug')->unique();
             $table->string('name');
             $table->text('description');
             $table->string('default_severity')->default('medium');
             $table->json('config_schema');
-            $table->string('executor_class');
+            $table->string('executor_class')->unique();
             $table->timestamps();
         });
     }

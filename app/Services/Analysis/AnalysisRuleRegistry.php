@@ -7,11 +7,11 @@ use App\Models\AnalysisRuleType;
 
 class AnalysisRuleRegistry
 {
-    /** @var array<string, array<string, mixed>>|null */
+    /** @var array<int, array<string, mixed>>|null */
     private ?array $typesCache = null;
 
     /**
-     * @return array<string, array{
+     * @return array<int, array{
      *     id: int,
      *     name: string,
      *     description: string,
@@ -30,7 +30,7 @@ class AnalysisRuleRegistry
             ->orderBy('name')
             ->get()
             ->mapWithKeys(fn (AnalysisRuleType $type) => [
-                $type->slug => [
+                $type->id => [
                     'id' => $type->id,
                     'name' => $type->name,
                     'description' => $type->description,
@@ -67,13 +67,13 @@ class AnalysisRuleRegistry
         $rule->loadMissing('type');
 
         if ($rule->type === null) {
-            throw new \InvalidArgumentException("Unknown rule type for rule: {$rule->slug}");
+            throw new \InvalidArgumentException("Unknown rule type for rule #{$rule->id}");
         }
 
         $class = $rule->type->executor_class;
 
         if (! is_subclass_of($class, AnalysisRuleInterface::class)) {
-            throw new \InvalidArgumentException("Invalid executor class for rule type: {$rule->type->slug}");
+            throw new \InvalidArgumentException("Invalid executor class for rule type #{$rule->type->id}");
         }
 
         return app($class);

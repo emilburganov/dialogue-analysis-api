@@ -18,7 +18,6 @@ class AnalysisRuleTypeSeeder extends Seeder
 
         DB::table('analysis_rule_types')->upsert([
             [
-                'slug' => 'slow_response',
                 'name' => 'Долгий ответ менеджера',
                 'description' => 'Срабатывает, если менеджер ответил позже заданного порога.',
                 'default_severity' => 'medium',
@@ -36,17 +35,15 @@ class AnalysisRuleTypeSeeder extends Seeder
                 'updated_at' => $now,
             ],
             [
-                'slug' => 'client_silence',
                 'name' => 'Клиент не ответил',
                 'description' => 'Последнее сообщение в диалоге отправил менеджер.',
-                'default_severity' => 'high',
+                'default_severity' => 'medium',
                 'config_schema' => json_encode([]),
                 'executor_class' => ClientSilenceRule::class,
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
             [
-                'slug' => 'unanswered_client',
                 'name' => 'Клиент без ответа',
                 'description' => 'Последнее сообщение в диалоге отправил клиент.',
                 'default_severity' => 'high',
@@ -56,16 +53,15 @@ class AnalysisRuleTypeSeeder extends Seeder
                 'updated_at' => $now,
             ],
             [
-                'slug' => 'objection_detected',
                 'name' => 'Возражение клиента',
                 'description' => 'Ищет ключевые слова возражений в сообщениях клиента.',
                 'default_severity' => 'low',
                 'config_schema' => json_encode([
                     [
                         'key' => 'keywords',
-                        'label' => 'Ключевые слова (через запятую)',
+                        'label' => 'Ключевые слова:',
                         'type' => 'keywords',
-                        'default' => 'дорого, дороговато, откаж, не нужн, не интерес, подума, не готов',
+                        'default' => ['дорого', 'дороговато', 'откаж', 'не нужн', 'не интерес', 'подума', 'не готов'],
                     ],
                 ]),
                 'executor_class' => ObjectionDetectedRule::class,
@@ -73,7 +69,6 @@ class AnalysisRuleTypeSeeder extends Seeder
                 'updated_at' => $now,
             ],
             [
-                'slug' => 'client_escalation',
                 'name' => 'Серия сообщений клиента',
                 'description' => 'Клиент отправил несколько сообщений подряд без ответа менеджера.',
                 'default_severity' => 'medium',
@@ -90,12 +85,11 @@ class AnalysisRuleTypeSeeder extends Seeder
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
-        ], uniqueBy: ['slug'], update: [
+        ], uniqueBy: ['executor_class'], update: [
             'name',
             'description',
             'default_severity',
             'config_schema',
-            'executor_class',
             'updated_at',
         ]);
     }

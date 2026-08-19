@@ -13,7 +13,6 @@ use App\Services\Analysis\Exceptions\AnalysisRuleAccessDeniedException;
 use App\Services\Analysis\Exceptions\AnalysisRuleImmutableException;
 use App\Services\Analysis\Exceptions\AnalysisRuleNotFoundException;
 use App\Services\Analysis\Exceptions\AnalysisRuleValidationException;
-use Illuminate\Support\Str;
 
 class AnalysisRuleManagementService
 {
@@ -29,16 +28,14 @@ class AnalysisRuleManagementService
         $this->ensureAdmin($user);
 
         return array_map(
-            fn (string $type, array $meta) => new AnalysisRuleTypeDTO(
+            fn (array $meta) => new AnalysisRuleTypeDTO(
                 id: $meta['id'],
-                type: $type,
                 name: $meta['name'],
                 description: $meta['description'],
                 defaultSeverity: $meta['default_severity'],
                 configSchema: $meta['config_schema'],
             ),
-            array_keys($this->registry->types()),
-            $this->registry->types(),
+            array_values($this->registry->types()),
         );
     }
 
@@ -71,20 +68,16 @@ class AnalysisRuleManagementService
             throw new AnalysisRuleValidationException('Выбран неизвестный тип правила.');
         }
 
-        $slug = Str::slug((string) ($payload['slug'] ?? ''));
-
-        if ($slug === '') {
-            throw new AnalysisRuleValidationException('Укажите код правила (slug).');
-        }
-
-        if (AnalysisRule::query()->where('slug', $slug)->exists()) {
-            throw new AnalysisRuleValidationException('Правило с таким кодом уже существует.');
-        }
-
         $name = trim((string) ($payload['name'] ?? ''));
 
         if ($name === '') {
             throw new AnalysisRuleValidationException('Укажите название правила.');
+        }
+
+        $description = trim((string) ($payload['description'] ?? ''));
+
+        if ($description === '') {
+            throw new AnalysisRuleValidationException('Укажите описание правила.');
         }
 
         $defaultSeverity = $this->normalizeSeverity(
@@ -96,10 +89,9 @@ class AnalysisRuleManagementService
         );
 
         $rule = AnalysisRule::query()->create([
-            'slug' => $slug,
             'rule_type_id' => $type->id,
             'name' => $name,
-            'description' => $payload['description'] ?? null,
+            'description' => $description,
             'default_severity' => $defaultSeverity,
             'is_enabled' => (bool) ($payload['is_enabled'] ?? true),
             'is_system' => false,
@@ -125,8 +117,14 @@ class AnalysisRuleManagementService
             throw new AnalysisRuleValidationException('Укажите название правила.');
         }
 
+        $description = trim((string) ($payload['description'] ?? $rule->description));
+
+        if ($description === '') {
+            throw new AnalysisRuleValidationException('Укажите описание правила.');
+        }
+
         $rule->name = $name;
-        $rule->description = $payload['description'] ?? $rule->description;
+        $rule->description = $description;
 
         if (array_key_exists('default_severity', $payload)) {
             $rule->default_severity = $this->normalizeSeverity((string) $payload['default_severity']);
@@ -143,7 +141,11 @@ class AnalysisRuleManagementService
                 throw new AnalysisRuleValidationException('У правила не найден тип.');
             }
 
-            $rule->config = $this->normalizeConfig($rule->type, $payload['config']);
+            $rule->config = $this->normalizeConfig(
+                $rule->type,
+                $payload['config'],
+                is_array($rule->config) ? $rule->config : null,
+            );
         }
 
         $rule->save();
@@ -208,9 +210,7 @@ class AnalysisRuleManagementService
 
         return new AnalysisRuleDTO(
             id: $rule->id,
-            slug: $rule->slug,
             ruleTypeId: $rule->rule_type_id,
-            ruleType: $rule->type?->slug ?? '',
             name: $rule->name,
             description: $rule->description,
             defaultSeverity: $rule->default_severity,
@@ -238,10 +238,10 @@ class AnalysisRuleManagementService
      * @param  array<string, mixed>  $config
      * @return array<string, mixed>
      */
-    private function normalizeConfig(AnalysisRuleType $type, array $config): array
+    private function normalizeConfig(AnalysisRuleType $type, array $config, ?array $baseConfig = null): array
     {
         $schema = $type->config_schema;
-        $normalized = $type->defaultConfig();
+        $normalized = $baseConfig ?? $type->defaultConfig();
 
         foreach ($schema as $field) {
             $key = $field['key'];
@@ -275,6 +275,16 @@ class AnalysisRuleManagementService
                         fn ($keyword) => $keyword !== '',
                     ));
                 }
+            }
+        }
+
+        foreach ($schema as $field) {
+            $key = $field['key'];
+
+            if (($field['type'] ?? null) === 'keywords' && empty($normalized[$key] ?? [])) {
+                throw new AnalysisRuleValidationException(
+                    ($field['label'] ?? $key).': укажите хотя бы одно ключевое слово.',
+                );
             }
         }
 
