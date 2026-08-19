@@ -1,0 +1,89 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: dialogue-analysis-app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    environment:
+      APP_NAME: "Сервис для анализа диалогов"
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:8000
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: dialogue_analysis
+      DB_USERNAME: dialogue
+      DB_PASSWORD: YkPxpTRWPBqZtNHSY7JlLmwcACQaFMAV
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - dialogue-analysis
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: dialogue-analysis-nginx
+    restart: unless-stopped
+    ports:
+      - "8000:80"
+    volumes:
+      - .:/var/www/html:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+    networks:
+      - dialogue-analysis
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: dialogue-analysis-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: dialogue_analysis
+      POSTGRES_USER: dialogue
+      POSTGRES_PASSWORD: YkPxpTRWPBqZtNHSY7JlLmwcACQaFMAV
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dialogue -d dialogue_analysis"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - dialogue-analysis
+
+  pgadmin:
+    image: dpage/pgadmin4:8.14
+    container_name: dialogue-analysis-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@local.dev
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+      - ./docker/pgadmin/servers.json:/pgadmin4/servers.json:ro
+      - ./docker/pgadmin/pgpass:/pgpass:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - dialogue-analysis
+
+networks:
+  dialogue-analysis:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local

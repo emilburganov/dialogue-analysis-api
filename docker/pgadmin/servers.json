@@ -1,0 +1,14 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Dialogue Analysis",
+      "Group": "Servers",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "dialogue_analysis",
+      "Username": "dialogue",
+      "PassFile": "/pgpass",
+      "SSLMode": "prefer"
+    }
+  }
+}
