@@ -17,5 +17,6 @@ chown -R www-data:www-data storage bootstrap/cache
 chmod -R 775 storage bootstrap/cache
 
 php artisan migrate --force --no-interaction
+php artisan db:seed --force --no-interaction
 
 exec "$@"

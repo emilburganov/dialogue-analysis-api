@@ -13,9 +13,23 @@ docker compose up -d --build
 ```
 
 При первом запуске автоматически:
-- создаётся `.env` из `.env.example`, если не было файла .env
+- создаётся `.env` из `.env.example`, если не было файла `.env`
 - устанавливаются зависимости Composer
-- выполняются миграции
+- выполняются миграции и сидер
+
+Тестовый пользователь:
+- Email: `admin@example.com`
+- Password: `password`
+
+## API авторизации
+
+| Метод | URL | Описание |
+|-------|-----|----------|
+| POST | `/api/login` | Получить Bearer token |
+| GET | `/api/me` | Текущий пользователь |
+| POST | `/api/logout` | Отозвать token |
+
+Заголовок для защищённых маршрутов: `Authorization: Bearer {token}`
 
 ## Адреса
 

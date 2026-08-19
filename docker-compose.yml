@@ -19,6 +19,7 @@ services:
       DB_DATABASE: dialogue_analysis
       DB_USERNAME: dialogue
       DB_PASSWORD: YkPxpTRWPBqZtNHSY7JlLmwcACQaFMAV
+      FRONTEND_URL: http://localhost
     depends_on:
       postgres:
         condition: service_healthy
