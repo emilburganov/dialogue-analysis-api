@@ -11,7 +11,6 @@ use App\Services\Analysis\DTO\AnalysisResultDTO;
 use App\Services\Analysis\Enums\AnalysisSeverity;
 use App\Services\Analysis\Exceptions\AnalysisAccessDeniedException;
 use App\Services\Analysis\Exceptions\AnalysisDialogueNotFoundException;
-use Carbon\Carbon;
 
 class AnalysisService
 {
@@ -67,7 +66,7 @@ class AnalysisService
             ->get()
             ->sortBy(
                 fn (DialogueAnalysisEvent $event) => AnalysisSeverity::from(
-                    $event->rule?->default_severity ?? AnalysisSeverity::Medium->value
+                    $event->rule->default_severity
                 )->getSeverityWeight()
             )
             ->map(

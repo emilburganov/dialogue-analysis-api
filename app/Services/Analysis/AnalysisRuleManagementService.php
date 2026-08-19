@@ -135,12 +135,6 @@ class AnalysisRuleManagementService
         }
 
         if (array_key_exists('config', $payload) && is_array($payload['config'])) {
-            $rule->loadMissing('type');
-
-            if ($rule->type === null) {
-                throw new AnalysisRuleValidationException('У правила не найден тип.');
-            }
-
             $rule->config = $this->normalizeConfig(
                 $rule->type,
                 $payload['config'],
