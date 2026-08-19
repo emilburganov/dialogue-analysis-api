@@ -46,11 +46,11 @@ class ClientEscalationRule implements AnalysisRuleInterface
     }
 
     /**
-     * @param  list<\App\Models\Message>  $messages
+     * @param  list<MessageSnapshot>  $messages
      */
     private function buildEvent(array $messages, AnalysisRule $rule): AnalysisEventDraftDTO
     {
-        $ids = array_map(fn ($message) => $message->id, $messages);
+        $ids = array_map(fn (MessageSnapshot $message) => $message->id, $messages);
 
         return new AnalysisEventDraftDTO(
             ruleSlug: $rule->slug,

@@ -19,6 +19,8 @@ return new class extends Migration
             $table->boolean('is_system')->default(false);
             $table->json('config')->nullable();
             $table->timestamps();
+
+            $table->foreign('rule_type')->references('slug')->on('analysis_rule_types');
         });
     }
 

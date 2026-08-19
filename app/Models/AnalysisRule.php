@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class AnalysisRule extends Model
@@ -31,6 +32,14 @@ class AnalysisRule extends Model
             'is_system' => 'boolean',
             'config' => 'array',
         ];
+    }
+
+    /**
+     * @return BelongsTo<AnalysisRuleType, $this>
+     */
+    public function type(): BelongsTo
+    {
+        return $this->belongsTo(AnalysisRuleType::class, 'rule_type', 'slug');
     }
 
     /**

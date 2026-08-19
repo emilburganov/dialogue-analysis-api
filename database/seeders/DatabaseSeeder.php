@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             DialogueResultSeeder::class,
             MessageSenderSeeder::class,
+            AnalysisRuleTypeSeeder::class,
             AnalysisRuleSeeder::class,
             UserSeeder::class,
             DialogueSeeder::class,

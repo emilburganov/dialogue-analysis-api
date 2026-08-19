@@ -3,85 +3,33 @@
 namespace App\Services\Analysis;
 
 use App\Models\AnalysisRule;
-use App\Services\Analysis\Rules\ClientEscalationRule;
-use App\Services\Analysis\Rules\ClientSilenceRule;
-use App\Services\Analysis\Rules\ObjectionDetectedRule;
-use App\Services\Analysis\Rules\SlowManagerResponseRule;
-use App\Services\Analysis\Rules\UnansweredClientRule;
+use App\Models\AnalysisRuleType;
 
 class AnalysisRuleRegistry
 {
-    /**
-     * @return array<string, array{
-     *     name: string,
-     *     description: string,
-     *     class: class-string<AnalysisRuleInterface>,
-     *     default_severity: string,
-     *     config_schema: list<array<string, mixed>>
-     * }>
-     */
+    private ?array $typesCache = null;
+
     public function types(): array
     {
-        return [
-            'slow_response' => [
-                'name' => 'Долгий ответ менеджера',
-                'description' => 'Срабатывает, если менеджер ответил позже заданного порога.',
-                'class' => SlowManagerResponseRule::class,
-                'default_severity' => 'medium',
-                'config_schema' => [
-                    [
-                        'key' => 'threshold_minutes',
-                        'label' => 'Порог ответа (мин.)',
-                        'type' => 'integer',
-                        'default' => 30,
-                        'min' => 1,
-                    ],
+        if ($this->typesCache !== null) {
+            return $this->typesCache;
+        }
+
+        $this->typesCache = AnalysisRuleType::query()
+            ->orderBy('name')
+            ->get()
+            ->mapWithKeys(fn (AnalysisRuleType $type) => [
+                $type->slug => [
+                    'name' => $type->name,
+                    'description' => $type->description,
+                    'class' => $type->executor_class,
+                    'default_severity' => $type->default_severity,
+                    'config_schema' => $type->config_schema,
                 ],
-            ],
-            'client_silence' => [
-                'name' => 'Клиент не ответил',
-                'description' => 'Последнее сообщение в диалоге отправил менеджер.',
-                'class' => ClientSilenceRule::class,
-                'default_severity' => 'high',
-                'config_schema' => [],
-            ],
-            'unanswered_client' => [
-                'name' => 'Клиент без ответа',
-                'description' => 'Последнее сообщение в диалоге отправил клиент.',
-                'class' => UnansweredClientRule::class,
-                'default_severity' => 'high',
-                'config_schema' => [],
-            ],
-            'objection_detected' => [
-                'name' => 'Возражение клиента',
-                'description' => 'Ищет ключевые слова возражений в сообщениях клиента.',
-                'class' => ObjectionDetectedRule::class,
-                'default_severity' => 'low',
-                'config_schema' => [
-                    [
-                        'key' => 'keywords',
-                        'label' => 'Ключевые слова (через запятую)',
-                        'type' => 'keywords',
-                        'default' => 'дорого, дороговато, откаж, не нужн, не интерес, подума, не готов',
-                    ],
-                ],
-            ],
-            'client_escalation' => [
-                'name' => 'Серия сообщений клиента',
-                'description' => 'Клиент отправил несколько сообщений подряд без ответа менеджера.',
-                'class' => ClientEscalationRule::class,
-                'default_severity' => 'medium',
-                'config_schema' => [
-                    [
-                        'key' => 'min_consecutive',
-                        'label' => 'Мин. сообщений подряд',
-                        'type' => 'integer',
-                        'default' => 3,
-                        'min' => 2,
-                    ],
-                ],
-            ],
-        ];
+            ])
+            ->all();
+
+        return $this->typesCache;
     }
 
     public function hasType(string $ruleType): bool
@@ -94,25 +42,13 @@ class AnalysisRuleRegistry
      */
     public function defaultConfig(string $ruleType): array
     {
-        $schema = $this->types()[$ruleType]['config_schema'] ?? [];
-        $config = [];
+        $type = AnalysisRuleType::query()->where('slug', $ruleType)->first();
 
-        foreach ($schema as $field) {
-            $value = $field['default'] ?? null;
-
-            if ($field['type'] === 'keywords' && is_string($value)) {
-                $config[$field['key']] = array_values(array_filter(
-                    array_map('trim', explode(',', $value)),
-                    fn ($keyword) => $keyword !== '',
-                ));
-
-                continue;
-            }
-
-            $config[$field['key']] = $value;
+        if ($type === null) {
+            return [];
         }
 
-        return $config;
+        return $type->defaultConfig();
     }
 
     public function makeExecutor(AnalysisRule $rule): AnalysisRuleInterface
@@ -123,6 +59,12 @@ class AnalysisRuleRegistry
             throw new \InvalidArgumentException("Unknown rule type: {$rule->rule_type}");
         }
 
-        return app($type['class']);
+        $class = $type['class'];
+
+        if (! is_subclass_of($class, AnalysisRuleInterface::class)) {
+            throw new \InvalidArgumentException("Invalid executor class for rule type: {$rule->rule_type}");
+        }
+
+        return app($class);
     }
 }

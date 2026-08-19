@@ -2,35 +2,36 @@
 
 namespace App\Services\Analysis;
 
-use App\Models\Dialogue;
-use App\Models\Message;
+use App\Services\Analysis\DTO\DialogueSnapshot;
+use App\Services\Analysis\DTO\MessageSnapshot;
+use App\Services\Analysis\Enums\MessageAuthor;
 use Illuminate\Support\Collection;
 
 readonly class AnalysisContext
 {
-    /** @param Collection<int, Message> $messages */
+    /**
+     * @param  Collection<int, MessageSnapshot>  $messages
+     */
     public function __construct(
-        public Dialogue $dialogue,
+        public int $dialogueId,
         public Collection $messages,
     ) {}
 
-    public static function fromDialogue(Dialogue $dialogue): self
+    public static function fromSnapshot(DialogueSnapshot $snapshot): self
     {
-        $dialogue->loadMissing(['messages.sender']);
-
         return new self(
-            dialogue: $dialogue,
-            messages: $dialogue->messages->values(),
+            dialogueId: $snapshot->id,
+            messages: $snapshot->messages,
         );
     }
 
-    public function isFromClient(Message $message): bool
+    public function isFromClient(MessageSnapshot $message): bool
     {
-        return $message->resolveSenderType()->value === 'client';
+        return $message->author === MessageAuthor::Client;
     }
 
-    public function isFromManager(Message $message): bool
+    public function isFromManager(MessageSnapshot $message): bool
     {
-        return $message->resolveSenderType()->value === 'manager';
+        return $message->author === MessageAuthor::Manager;
     }
 }

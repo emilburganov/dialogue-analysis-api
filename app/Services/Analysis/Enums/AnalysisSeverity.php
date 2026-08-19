@@ -16,4 +16,13 @@ enum AnalysisSeverity: string
             self::Low => 'Низкая',
         };
     }
+
+    public function getSeverityWeight(): int
+    {
+        return match ($this) {
+            self::High => 0,
+            self::Medium => 1,
+            self::Low => 2,
+        };
+    }
 }

@@ -31,7 +31,7 @@ class SlowManagerResponseRule implements AnalysisRuleInterface
                 continue;
             }
 
-            $delayMinutes = $current->sent_at->diffInMinutes($next->sent_at);
+            $delayMinutes = $current->sentAt->diffInMinutes($next->sentAt);
 
             if ($delayMinutes <= $thresholdMinutes) {
                 continue;

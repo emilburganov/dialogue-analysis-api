@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Services\Analysis\AnalysisRuleRegistry;
+use App\Models\AnalysisRuleType;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -11,7 +11,6 @@ class AnalysisRuleSeeder extends Seeder
     public function run(): void
     {
         $now = now();
-        $registry = app(AnalysisRuleRegistry::class);
 
         $rows = [
             [
@@ -47,15 +46,17 @@ class AnalysisRuleSeeder extends Seeder
         ];
 
         DB::table('analysis_rules')->upsert(
-            array_map(function (array $row) use ($registry, $now) {
-                $typeMeta = $registry->types()[$row['rule_type']];
+            array_map(function (array $row) use ($now) {
+                $type = AnalysisRuleType::query()
+                    ->where('slug', $row['rule_type'])
+                    ->firstOrFail();
 
                 return [
                     ...$row,
-                    'default_severity' => $typeMeta['default_severity'],
+                    'default_severity' => $type->default_severity,
                     'is_enabled' => true,
                     'is_system' => true,
-                    'config' => json_encode($registry->defaultConfig($row['rule_type'])),
+                    'config' => json_encode($type->defaultConfig()),
                     'created_at' => $now,
                     'updated_at' => $now,
                 ];

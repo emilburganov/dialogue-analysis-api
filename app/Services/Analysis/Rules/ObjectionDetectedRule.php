@@ -3,10 +3,10 @@
 namespace App\Services\Analysis\Rules;
 
 use App\Models\AnalysisRule;
-use App\Models\Message;
 use App\Services\Analysis\AnalysisContext;
 use App\Services\Analysis\AnalysisRuleInterface;
 use App\Services\Analysis\DTO\AnalysisEventDraftDTO;
+use App\Services\Analysis\DTO\MessageSnapshot;
 use App\Services\Analysis\Rules\Concerns\ResolvesRuleSeverity;
 
 class ObjectionDetectedRule implements AnalysisRuleInterface
@@ -71,7 +71,7 @@ class ObjectionDetectedRule implements AnalysisRuleInterface
     /**
      * @param  list<string>  $keywords
      */
-    private function matchKeyword(Message $message, array $keywords): ?string
+    private function matchKeyword(MessageSnapshot $message, array $keywords): ?string
     {
         $body = mb_strtolower($message->body);
 
